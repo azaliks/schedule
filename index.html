@@ -65,7 +65,7 @@
     margin-bottom: 16px;
   }
 
-  /* ===== ТАБЛИЦА РАСПИСАНИЯ ===== */
+  /* ===== ТАБЛИЦА ===== */
   .table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
   table.schedule {
     border-collapse: collapse; width: 100%; min-width: 640px;
@@ -117,12 +117,12 @@
     .form-row input[name="place"] { grid-column: 1 / -1; }
     .form-row button { grid-column: 1 / -1; }
   }
-  input, select {
+  input, select, textarea {
     background: var(--bg); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 12px; font-size: 14px;
     color: var(--text); width: 100%; font-family: inherit;
   }
-  input:focus, select:focus {
+  input:focus, select:focus, textarea:focus {
     outline: none; border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
@@ -132,8 +132,15 @@
     font-size: 14px; font-weight: 600; transition: opacity .2s;
   }
   button.primary:hover { opacity: .88; }
+  button.primary:disabled { opacity: .5; cursor: not-allowed; }
+  button.secondary {
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 18px; cursor: pointer;
+    font-size: 14px; font-weight: 600; transition: all .2s;
+  }
+  button.secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ===== СПИСОК СЕКЦИЙ ===== */
+  /* ===== СПИСОК ===== */
   .section-group { margin-bottom: 18px; }
   .section-group h3 {
     font-size: 14px; color: var(--muted); text-transform: uppercase;
@@ -159,7 +166,7 @@
   }
   .del-btn:hover { color: var(--danger); background: var(--accent-soft); }
 
-  /* ===== ФОТО ===== */
+  /* ===== ФОТО + OCR ===== */
   .dropzone {
     border: 2px dashed var(--border); border-radius: 14px;
     padding: 40px 20px; text-align: center; cursor: pointer;
@@ -189,6 +196,42 @@
     font-size: 16px; line-height: 1;
   }
   .photo-del:hover { background: var(--danger); }
+  .photo-ocr {
+    position: absolute; bottom: 6px; left: 6px; right: 6px;
+    background: rgba(79, 110, 247, .9); color: #fff; border: none;
+    padding: 8px; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 600;
+  }
+  .photo-ocr:hover { background: var(--accent); }
+  .photo-ocr:disabled { opacity: .6; cursor: wait; }
+
+  .ocr-result {
+    margin-top: 16px; display: none;
+  }
+  .ocr-result.open { display: block; }
+  .ocr-result h3 {
+    font-size: 15px; margin-bottom: 8px;
+  }
+  .ocr-result textarea {
+    min-height: 160px; resize: vertical; font-family: monospace;
+    font-size: 13px; line-height: 1.5;
+  }
+  .ocr-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+  .progress {
+    display: none; margin-top: 12px; padding: 12px;
+    background: var(--accent-soft); border-radius: 10px;
+    font-size: 14px; color: var(--accent);
+  }
+  .progress.open { display: block; }
+  .progress-bar {
+    height: 6px; background: var(--border); border-radius: 3px;
+    margin-top: 8px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); width: 0%;
+    transition: width .3s;
+  }
 
   .today-empty { color: var(--muted); text-align: center; padding: 20px 0; }
   .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
@@ -220,7 +263,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="table">Таблица</button>
     <button class="tab" data-tab="sections">Секции</button>
-    <button class="tab" data-tab="photos">Фото расписания</button>
+    <button class="tab" data-tab="photos">Фото + распознавание</button>
   </div>
 
   <!-- ТАБЛИЦА -->
@@ -256,7 +299,7 @@
     <div class="card" id="sectionsList"></div>
   </div>
 
-  <!-- ФОТО -->
+  <!-- ФОТО + OCR -->
   <div class="panel" id="panel-photos">
     <div class="card">
       <div class="dropzone" id="dropzone">
@@ -264,7 +307,22 @@
         <input type="file" id="fileInput" accept="image/*" multiple hidden>
       </div>
       <div class="photo-grid" id="photoGrid"></div>
-      <div class="hint">Фото хранятся только в твоём браузере, никуда не отправляются.</div>
+      <div class="hint">Фото хранятся только в твоём браузере. Кнопка «Распознать» прочитает текст с картинки.</div>
+    </div>
+
+    <div class="card ocr-result" id="ocrResult">
+      <h3>📝 Распознанный текст</h3>
+      <textarea id="ocrText" placeholder="Здесь появится текст с фото..."></textarea>
+      <div class="ocr-actions">
+        <button class="secondary" id="copyOcrBtn">📋 Копировать</button>
+        <button class="secondary" id="clearOcrBtn">Очистить</button>
+      </div>
+      <div class="hint">Скопируй нужное и добавь секции вручную во вкладке «Секции». OCR не понимает структуру таблицы — только текст.</div>
+    </div>
+
+    <div class="progress" id="progress">
+      <div id="progressText">Загрузка движка распознавания...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </div>
 </div>
@@ -274,6 +332,8 @@
   <img id="modalImg" src="" alt="">
 </div>
 
+<!-- Tesseract.js с CDN -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 const KEY_SECTIONS = 'schedule_sections_v2';
 const KEY_PHOTOS = 'schedule_photos_v1';
@@ -281,9 +341,7 @@ const KEY_THEME = 'schedule_theme_v1';
 
 const DAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const DAYS_FULL = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
-const ORDER = [1,2,3,4,5,6,0]; // Пн..Вс
-
-// Часы сетки: с 7:00 до 22:00
+const ORDER = [1,2,3,4,5,6,0];
 const START_HOUR = 7;
 const END_HOUR = 22;
 
@@ -292,7 +350,6 @@ function loadSections() {
   catch { return []; }
 }
 function saveSections(s) { localStorage.setItem(KEY_SECTIONS, JSON.stringify(s)); }
-
 function loadPhotos() {
   try { return JSON.parse(localStorage.getItem(KEY_PHOTOS)) || []; }
   catch { return []; }
@@ -302,7 +359,7 @@ function savePhotos(p) {
   catch (e) { alert('Не хватило места в браузере. Удали старые фото.'); }
 }
 
-// ---------- ВКЛАДКИ ----------
+// ВКЛАДКИ
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -313,7 +370,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// ---------- ТЕМА ----------
+// ТЕМА
 const themeBtn = document.getElementById('themeBtn');
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
@@ -327,13 +384,12 @@ themeBtn.addEventListener('click', () => {
   localStorage.setItem(KEY_THEME, next);
 });
 
-// ---------- ТАБЛИЦА ----------
+// ТАБЛИЦА
 function renderTable() {
   const table = document.getElementById('scheduleTable');
   const sections = loadSections();
   const today = new Date().getDay();
 
-  // Заголовок: пустая ячейка + дни
   let html = '<thead><tr><th style="width:70px"></th>';
   ORDER.forEach(d => {
     const isToday = d === today;
@@ -341,7 +397,6 @@ function renderTable() {
   });
   html += '</tr></thead><tbody>';
 
-  // Ячейки по часам
   for (let h = START_HOUR; h < END_HOUR; h++) {
     html += `<tr><td class="time-col">${pad(h)}:00</td>`;
     ORDER.forEach(d => {
@@ -371,13 +426,10 @@ function renderTable() {
   });
 }
 
-function hourOf(t) {
-  if (!t) return -1;
-  return Number(t.split(':')[0]);
-}
+function hourOf(t) { return t ? Number(t.split(':')[0]) : -1; }
 function pad(n) { return String(n).padStart(2, '0'); }
 
-// ---------- СЕКЦИИ ----------
+// СПИСОК
 function renderSections() {
   const sections = loadSections();
   const list = document.getElementById('sectionsList');
@@ -446,7 +498,7 @@ document.getElementById('addBtn').addEventListener('click', () => {
   renderSections(); renderTable();
 });
 
-// ---------- ФОТО ----------
+// ФОТО
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const photoGrid = document.getElementById('photoGrid');
@@ -482,6 +534,7 @@ function renderPhotos() {
     <div class="photo-item">
       <img src="${p.data}" data-open="${p.id}" alt="расписание">
       <button class="photo-del" data-del-photo="${p.id}">×</button>
+      <button class="photo-ocr" data-ocr="${p.id}">🔍 Распознать</button>
     </div>`).join('');
 
   photoGrid.querySelectorAll('[data-open]').forEach(img => {
@@ -498,8 +551,86 @@ function renderPhotos() {
       renderPhotos();
     });
   });
+  photoGrid.querySelectorAll('[data-ocr]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const photo = loadPhotos().find(p => p.id === btn.dataset.ocr);
+      if (photo) runOCR(photo.data);
+    });
+  });
 }
 
+// OCR
+let ocrRunning = false;
+async function runOCR(dataUrl) {
+  if (ocrRunning) { alert('Распознавание уже идёт, подожди'); return; }
+  if (typeof Tesseract === 'undefined') {
+    alert('Не загрузился движок распознавания. Проверь интернет и обнови страницу.');
+    return;
+  }
+  ocrRunning = true;
+  const prog = document.getElementById('progress');
+  const progText = document.getElementById('progressText');
+  const progFill = document.getElementById('progressFill');
+  const result = document.getElementById('ocrResult');
+  const ocrText = document.getElementById('ocrText');
+
+  prog.classList.add('open');
+  result.classList.remove('open');
+  progFill.style.width = '0%';
+  progText.textContent = 'Загрузка русского языка (первый раз ~10 МБ)...';
+
+  try {
+    const worker = await Tesseract.createWorker('rus+eng', 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          progText.textContent = 'Распознавание... ' + Math.round(m.progress * 100) + '%';
+          progFill.style.width = Math.round(m.progress * 100) + '%';
+        } else if (m.status === 'loading language traineddata') {
+          progText.textContent = 'Загрузка языка... ' + Math.round(m.progress * 100) + '%';
+          progFill.style.width = Math.round(m.progress * 100) + '%';
+        } else {
+          progText.textContent = m.status;
+        }
+      }
+    });
+    const { data: { text } } = await worker.recognize(dataUrl);
+    await worker.terminate();
+
+    progFill.style.width = '100%';
+    progText.textContent = '✅ Готово!';
+    setTimeout(() => prog.classList.remove('open'), 800);
+
+    ocrText.value = text.trim() || '(ничего не распознано)';
+    result.classList.add('open');
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) {
+    console.error(e);
+    prog.classList.remove('open');
+    alert('Ошибка распознавания: ' + e.message);
+  } finally {
+    ocrRunning = false;
+  }
+}
+
+document.getElementById('copyOcrBtn').addEventListener('click', async () => {
+  const ta = document.getElementById('ocrText');
+  try {
+    await navigator.clipboard.writeText(ta.value);
+    const btn = document.getElementById('copyOcrBtn');
+    const old = btn.textContent;
+    btn.textContent = '✅ Скопировано';
+    setTimeout(() => btn.textContent = old, 1500);
+  } catch {
+    ta.select(); document.execCommand('copy');
+  }
+});
+document.getElementById('clearOcrBtn').addEventListener('click', () => {
+  document.getElementById('ocrText').value = '';
+  document.getElementById('ocrResult').classList.remove('open');
+});
+
+// МОДАЛКА
 document.getElementById('modalClose').addEventListener('click', () => {
   document.getElementById('modal').classList.remove('open');
 });
@@ -507,12 +638,10 @@ document.getElementById('modal').addEventListener('click', e => {
   if (e.target.id === 'modal') e.currentTarget.classList.remove('open');
 });
 
-// ---------- УТИЛИТЫ ----------
 function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// ---------- СТАРТ ----------
 renderTable();
 renderSections();
 renderPhotos();
