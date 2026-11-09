@@ -15,6 +15,7 @@
     --border: #e3e7f1;
     --danger: #ef4444;
     --shadow: 0 4px 20px rgba(30, 40, 80, 0.08);
+    --cell: #f9fafd;
   }
   [data-theme="dark"] {
     --bg: #12141c;
@@ -25,6 +26,7 @@
     --accent-soft: #262b40;
     --border: #2a2f42;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --cell: #202433;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -35,7 +37,7 @@
     padding: 20px;
     transition: background .3s, color .3s;
   }
-  .wrap { max-width: 900px; margin: 0 auto; }
+  .wrap { max-width: 1000px; margin: 0 auto; }
   header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
@@ -63,7 +65,101 @@
     margin-bottom: 16px;
   }
 
-  /* Загрузка фото */
+  /* ===== ТАБЛИЦА РАСПИСАНИЯ ===== */
+  .table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
+  table.schedule {
+    border-collapse: collapse; width: 100%; min-width: 640px;
+    background: var(--card); font-size: 14px;
+  }
+  table.schedule th, table.schedule td {
+    border: 1px solid var(--border);
+    padding: 0; vertical-align: top;
+  }
+  table.schedule thead th {
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 700; padding: 12px 8px; text-align: center;
+    font-size: 14px; position: sticky; top: 0;
+  }
+  table.schedule thead th.today-col {
+    background: var(--accent); color: #fff;
+  }
+  table.schedule .time-col {
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 700; text-align: center; width: 70px;
+    padding: 8px 6px; font-size: 13px; white-space: nowrap;
+  }
+  td.slot {
+    height: 60px; padding: 4px; background: var(--cell);
+    transition: background .2s;
+  }
+  td.slot.today-slot { background: var(--accent-soft); }
+  td.slot:hover { background: var(--accent-soft); }
+
+  .lesson {
+    background: var(--accent); color: #fff; border-radius: 8px;
+    padding: 6px 8px; font-size: 12px; line-height: 1.3;
+    cursor: pointer; position: relative; height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+    transition: opacity .2s, transform .15s;
+  }
+  .lesson:hover { transform: scale(1.02); }
+  .lesson.off { opacity: .4; text-decoration: line-through; }
+  .lesson .l-name { font-weight: 700; }
+  .lesson .l-place { opacity: .85; font-size: 11px; margin-top: 2px; }
+
+  /* ===== ФОРМА ===== */
+  .form-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr auto;
+    gap: 8px; margin-bottom: 16px;
+  }
+  @media (max-width: 760px) {
+    .form-row { grid-template-columns: 1fr 1fr; }
+    .form-row input[name="place"] { grid-column: 1 / -1; }
+    .form-row button { grid-column: 1 / -1; }
+  }
+  input, select {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; font-size: 14px;
+    color: var(--text); width: 100%; font-family: inherit;
+  }
+  input:focus, select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  button.primary {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 10px 18px; cursor: pointer;
+    font-size: 14px; font-weight: 600; transition: opacity .2s;
+  }
+  button.primary:hover { opacity: .88; }
+
+  /* ===== СПИСОК СЕКЦИЙ ===== */
+  .section-group { margin-bottom: 18px; }
+  .section-group h3 {
+    font-size: 14px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 8px;
+  }
+  .section-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+    transition: opacity .2s;
+  }
+  .section-item.off { opacity: .45; }
+  .section-item input[type="checkbox"] {
+    width: 20px; height: 20px; accent-color: var(--accent);
+    cursor: pointer; flex-shrink: 0;
+  }
+  .section-info { flex: 1; min-width: 0; }
+  .section-name { font-weight: 600; font-size: 15px; }
+  .section-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .del-btn {
+    background: transparent; border: none; color: var(--muted);
+    font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+  }
+  .del-btn:hover { color: var(--danger); background: var(--accent-soft); }
+
+  /* ===== ФОТО ===== */
   .dropzone {
     border: 2px dashed var(--border); border-radius: 14px;
     padding: 40px 20px; text-align: center; cursor: pointer;
@@ -94,72 +190,9 @@
   }
   .photo-del:hover { background: var(--danger); }
 
-  /* Форма секций */
-  .form-row {
-    display: grid; grid-template-columns: 2fr 1fr 1fr 2fr auto;
-    gap: 8px; margin-bottom: 16px;
-  }
-  @media (max-width: 700px) {
-    .form-row { grid-template-columns: 1fr 1fr; }
-    .form-row input[name="place"] { grid-column: 1 / -1; }
-    .form-row button { grid-column: 1 / -1; }
-  }
-  input, select {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 12px; font-size: 14px;
-    color: var(--text); width: 100%; font-family: inherit;
-  }
-  input:focus, select:focus {
-    outline: none; border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
-  }
-  button.primary {
-    background: var(--accent); color: #fff; border: none;
-    border-radius: 10px; padding: 10px 18px; cursor: pointer;
-    font-size: 14px; font-weight: 600; transition: opacity .2s;
-  }
-  button.primary:hover { opacity: .88; }
-
-  /* Список секций */
-  .section-group { margin-bottom: 18px; }
-  .section-group h3 {
-    font-size: 14px; color: var(--muted); text-transform: uppercase;
-    letter-spacing: .5px; margin-bottom: 8px;
-  }
-  .section-item {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
-    transition: opacity .2s;
-  }
-  .section-item.off { opacity: .45; }
-  .section-item input[type="checkbox"] {
-    width: 20px; height: 20px; accent-color: var(--accent);
-    cursor: pointer; flex-shrink: 0;
-  }
-  .section-info { flex: 1; min-width: 0; }
-  .section-name { font-weight: 600; font-size: 15px; }
-  .section-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .del-btn {
-    background: transparent; border: none; color: var(--muted);
-    font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 8px;
-  }
-  .del-btn:hover { color: var(--danger); background: var(--accent-soft); }
-
-  /* Сегодня */
   .today-empty { color: var(--muted); text-align: center; padding: 20px 0; }
-  .next-item {
-    background: var(--accent-soft); border-radius: 12px;
-    padding: 14px 16px; margin-bottom: 12px;
-  }
-  .next-item .label {
-    font-size: 12px; color: var(--accent); font-weight: 700;
-    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
-  }
-  .next-item .name { font-size: 18px; font-weight: 700; }
-  .next-item .time { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
 
-  /* Модалка фото */
   .modal {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,.9); z-index: 100;
@@ -175,7 +208,6 @@
     background: none; border: none; color: #fff;
     font-size: 40px; cursor: pointer; line-height: 1;
   }
-  .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -186,14 +218,21 @@
   </header>
 
   <div class="tabs">
-    <button class="tab active" data-tab="today">Сегодня</button>
+    <button class="tab active" data-tab="table">Таблица</button>
     <button class="tab" data-tab="sections">Секции</button>
     <button class="tab" data-tab="photos">Фото расписания</button>
   </div>
 
-  <!-- СЕГОДНЯ -->
-  <div class="panel active" id="panel-today">
-    <div class="card" id="todayCard"></div>
+  <!-- ТАБЛИЦА -->
+  <div class="panel active" id="panel-table">
+    <div class="card">
+      <div class="hint" style="margin:0 0 12px">
+        Клик по занятию — отметить «хожу / не хожу». Пустая ячейка — свободно.
+      </div>
+      <div class="table-wrap">
+        <table class="schedule" id="scheduleTable"></table>
+      </div>
+    </div>
   </div>
 
   <!-- СЕКЦИИ -->
@@ -207,11 +246,12 @@
           <option value="5">Пт</option><option value="6">Сб</option>
           <option value="0">Вс</option>
         </select>
-        <input type="time" id="inTime">
+        <input type="time" id="inStart" title="Начало">
+        <input type="time" id="inEnd" title="Конец">
         <input type="text" id="inPlace" placeholder="Место (необязательно)">
         <button class="primary" id="addBtn">Добавить</button>
       </div>
-      <div class="hint">Отметь галочкой секции, на которые ходишь. Остальные будут бледными.</div>
+      <div class="hint">Занятие появится в таблице на своём дне и времени. Галочка = хожу.</div>
     </div>
     <div class="card" id="sectionsList"></div>
   </div>
@@ -235,14 +275,18 @@
 </div>
 
 <script>
-const KEY_SECTIONS = 'schedule_sections_v1';
+const KEY_SECTIONS = 'schedule_sections_v2';
 const KEY_PHOTOS = 'schedule_photos_v1';
 const KEY_THEME = 'schedule_theme_v1';
 
 const DAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const DAYS_FULL = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const ORDER = [1,2,3,4,5,6,0]; // Пн..Вс
 
-// ---------- ХРАНИЛИЩЕ ----------
+// Часы сетки: с 7:00 до 22:00
+const START_HOUR = 7;
+const END_HOUR = 22;
+
 function loadSections() {
   try { return JSON.parse(localStorage.getItem(KEY_SECTIONS)) || []; }
   catch { return []; }
@@ -265,7 +309,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    if (tab.dataset.tab === 'today') renderToday();
+    if (tab.dataset.tab === 'table') renderTable();
   });
 });
 
@@ -283,6 +327,56 @@ themeBtn.addEventListener('click', () => {
   localStorage.setItem(KEY_THEME, next);
 });
 
+// ---------- ТАБЛИЦА ----------
+function renderTable() {
+  const table = document.getElementById('scheduleTable');
+  const sections = loadSections();
+  const today = new Date().getDay();
+
+  // Заголовок: пустая ячейка + дни
+  let html = '<thead><tr><th style="width:70px"></th>';
+  ORDER.forEach(d => {
+    const isToday = d === today;
+    html += `<th class="${isToday ? 'today-col' : ''}">${DAYS[d]}${isToday ? ' •' : ''}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  // Ячейки по часам
+  for (let h = START_HOUR; h < END_HOUR; h++) {
+    html += `<tr><td class="time-col">${pad(h)}:00</td>`;
+    ORDER.forEach(d => {
+      const isToday = d === today;
+      const lessons = sections.filter(s => Number(s.day) === d && hourOf(s.start) === h);
+      html += `<td class="slot ${isToday ? 'today-slot' : ''}">`;
+      lessons.forEach(s => {
+        const timeLabel = s.end ? `${s.start}–${s.end}` : s.start;
+        html += `<div class="lesson ${s.active ? '' : 'off'}" data-toggle="${s.id}" title="${esc(timeLabel)}">
+          <div class="l-name">${esc(s.name)}</div>
+          <div class="l-place">${esc(timeLabel)}${s.place ? ' · ' + esc(s.place) : ''}</div>
+        </div>`;
+      });
+      html += '</td>';
+    });
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  table.querySelectorAll('[data-toggle]').forEach(el => {
+    el.addEventListener('click', () => {
+      const sections = loadSections();
+      const s = sections.find(x => x.id === el.dataset.toggle);
+      if (s) { s.active = !s.active; saveSections(sections); renderTable(); renderSections(); }
+    });
+  });
+}
+
+function hourOf(t) {
+  if (!t) return -1;
+  return Number(t.split(':')[0]);
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+
 // ---------- СЕКЦИИ ----------
 function renderSections() {
   const sections = loadSections();
@@ -294,17 +388,18 @@ function renderSections() {
   const byDay = {};
   sections.forEach(s => { (byDay[s.day] ||= []).push(s); });
   let html = '';
-  [1,2,3,4,5,6,0].forEach(d => {
+  ORDER.forEach(d => {
     if (!byDay[d]) return;
-    byDay[d].sort((a,b) => (a.time||'').localeCompare(b.time||''));
+    byDay[d].sort((a,b) => (a.start||'').localeCompare(b.start||''));
     html += `<div class="section-group"><h3>${DAYS_FULL[d]}</h3>`;
     byDay[d].forEach(s => {
+      const time = s.start ? (s.end ? `${s.start}–${s.end}` : s.start) : 'без времени';
       html += `
         <div class="section-item ${s.active ? '' : 'off'}">
           <input type="checkbox" ${s.active ? 'checked' : ''} data-id="${s.id}">
           <div class="section-info">
             <div class="section-name">${esc(s.name)}</div>
-            <div class="section-meta">${s.time || 'без времени'}${s.place ? ' · ' + esc(s.place) : ''}</div>
+            <div class="section-meta">${time}${s.place ? ' · ' + esc(s.place) : ''}</div>
           </div>
           <button class="del-btn" data-del="${s.id}" title="Удалить">×</button>
         </div>`;
@@ -317,14 +412,14 @@ function renderSections() {
     cb.addEventListener('change', () => {
       const sections = loadSections();
       const s = sections.find(x => x.id === cb.dataset.id);
-      if (s) { s.active = cb.checked; saveSections(sections); renderSections(); }
+      if (s) { s.active = cb.checked; saveSections(sections); renderSections(); renderTable(); }
     });
   });
   list.querySelectorAll('[data-del]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (!confirm('Удалить эту секцию?')) return;
       saveSections(loadSections().filter(x => x.id !== btn.dataset.del));
-      renderSections();
+      renderSections(); renderTable();
     });
   });
 }
@@ -332,99 +427,24 @@ function renderSections() {
 document.getElementById('addBtn').addEventListener('click', () => {
   const name = document.getElementById('inName').value.trim();
   const day = document.getElementById('inDay').value;
-  const time = document.getElementById('inTime').value;
+  const start = document.getElementById('inStart').value;
+  const end = document.getElementById('inEnd').value;
   const place = document.getElementById('inPlace').value.trim();
   if (!name) { alert('Введи название секции'); return; }
+  if (!start) { alert('Укажи время начала'); return; }
+  if (end && end <= start) { alert('Конец должен быть позже начала'); return; }
   const sections = loadSections();
   sections.push({
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    name, day, time, place, active: true
+    name, day, start, end, place, active: true
   });
   saveSections(sections);
   document.getElementById('inName').value = '';
-  document.getElementById('inTime').value = '';
+  document.getElementById('inStart').value = '';
+  document.getElementById('inEnd').value = '';
   document.getElementById('inPlace').value = '';
-  renderSections();
+  renderSections(); renderTable();
 });
-
-// ---------- СЕГОДНЯ ----------
-function renderToday() {
-  const card = document.getElementById('todayCard');
-  const sections = loadSections().filter(s => s.active);
-  const now = new Date();
-  const today = now.getDay();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-
-  const todays = sections.filter(s => Number(s.day) === today && s.time)
-    .sort((a,b) => a.time.localeCompare(b.time));
-
-  const withoutTime = sections.filter(s => Number(s.day) === today && !s.time);
-
-  let html = `<h3 style="font-size:16px;margin-bottom:12px">${DAYS_FULL[today]}</h3>`;
-
-  // Ближайшее сегодня
-  const nextToday = todays.find(s => toMin(s.time) >= nowMin);
-  if (nextToday) {
-    html += `<div class="next-item">
-      <div class="label">Следующее сегодня</div>
-      <div class="name">${esc(nextToday.name)}</div>
-      <div class="time">${nextToday.time}${nextToday.place ? ' · ' + esc(nextToday.place) : ''}</div>
-    </div>`;
-  }
-
-  if (todays.length === 0 && withoutTime.length === 0) {
-    html += `<div class="today-empty">Сегодня занятий нет 🎉</div>`;
-  } else {
-    todays.forEach(s => {
-      const past = toMin(s.time) < nowMin;
-      html += `<div class="section-item" style="${past ? 'opacity:.5' : ''}">
-        <div style="font-weight:700;color:var(--accent);min-width:52px">${s.time}</div>
-        <div class="section-info">
-          <div class="section-name">${esc(s.name)}</div>
-          ${s.place ? `<div class="section-meta">${esc(s.place)}</div>` : ''}
-        </div>
-      </div>`;
-    });
-    withoutTime.forEach(s => {
-      html += `<div class="section-item">
-        <div style="font-weight:700;color:var(--muted);min-width:52px">—</div>
-        <div class="section-info">
-          <div class="section-name">${esc(s.name)}</div>
-          ${s.place ? `<div class="section-meta">${esc(s.place)}</div>` : ''}
-        </div>
-      </div>`;
-    });
-  }
-
-  // Ближайшее в следующие 7 дней
-  const upcoming = [];
-  for (let offset = 1; offset <= 7; offset++) {
-    const d = (today + offset) % 7;
-    sections.filter(s => Number(s.day) === d && s.time)
-      .forEach(s => upcoming.push({ ...s, offset }));
-  }
-  upcoming.sort((a,b) => a.offset - b.offset || a.time.localeCompare(b.time));
-  if (upcoming.length) {
-    const u = upcoming[0];
-    html += `<div style="margin-top:16px">
-      <div class="label" style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Скоро</div>
-      <div class="section-item">
-        <div style="font-weight:700;color:var(--muted);min-width:52px">${DAYS[u.day]}</div>
-        <div class="section-info">
-          <div class="section-name">${esc(u.name)}</div>
-          <div class="section-meta">${u.time}${u.place ? ' · ' + esc(u.place) : ''}</div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  card.innerHTML = html;
-}
-
-function toMin(t) {
-  const [h,m] = t.split(':').map(Number);
-  return h*60 + m;
-}
 
 // ---------- ФОТО ----------
 const dropzone = document.getElementById('dropzone');
@@ -493,9 +513,9 @@ function esc(s) {
 }
 
 // ---------- СТАРТ ----------
+renderTable();
 renderSections();
 renderPhotos();
-renderToday();
 </script>
 </body>
 </html>
